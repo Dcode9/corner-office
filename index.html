@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corner Office - a tower of AI-run companies on Pollinations</title>
+<meta name="description" content="Turn a 3D tower, ride the elevator, step into any office. Every floor is a company run by Pollinations agents, powered by your own Pollen.">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>">
+</head>
+<body>
+<header id="topbar">
+  <div class="brand">
+    <svg class="logo" width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="7" width="10" height="14" rx="1" fill="#3a7bd5"/><rect x="16" y="3" width="5" height="18" rx="1" fill="#7b5cd6"/><g fill="#cfe6ff"><rect x="6" y="9.5" width="2" height="2"/><rect x="10" y="9.5" width="2" height="2"/><rect x="6" y="13" width="2" height="2"/><rect x="10" y="13" width="2" height="2"/><rect x="17.2" y="5.5" width="2.6" height="2"/><rect x="17.2" y="9" width="2.6" height="2"/></g></svg>
+    <div>
+      <h1>Corner Office</h1>
+      <p class="tagline">a tower of AI-run companies on <a href="https://pollinations.ai" target="_blank" rel="noopener">Pollinations</a> agents</p>
+    </div>
+  </div>
+  <nav>
+    <a href="#/tower" data-nav="tower">Tower</a>
+    <a href="#/directory" data-nav="directory">Directory</a>
+    <a href="#/receipts" data-nav="receipts">Receipts <span id="nav-receipt-count" class="pill hidden"></span></a>
+  </nav>
+  <div class="connect-area">
+    <span id="balance-chip" class="chip hidden" title="Your Pollen balance"></span>
+    <button id="btn-connect" class="btn btn-primary">Connect your Pollen</button>
+    <button id="btn-demo" class="btn btn-ghost" title="Explore a scripted workday with sample data - no sign-in, no Pollen spent">▶ Replay a day</button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ TOWER VIEW ============ -->
+  <section id="view-tower" class="view">
+    <div id="scene-wrap">
+      <div id="scene-hint">drag to turn the tower · click a lit floor to step inside</div>
+      <div id="scene">
+        <div id="tower">
+          <!-- floors injected by tower3d.js -->
+          <div id="elevator"><div class="elev-car"><span class="elev-door"></span></div></div>
+        </div>
+        
+      </div>
+      <div id="clouds"><span class="cloud"></span><span class="cloud"></span><span class="cloud"></span></div>
+    </div>
+    <aside id="tower-side">
+      <div class="panel">
+        <h2 id="side-title">The building</h2>
+        <p id="side-blurb">Six companies, each run day-to-day by Pollinations agents on the owner's account. Connect your own Pollen to raise your own tower - the agents live on your account and spend only your Pollen, with your budget.</p>
+        <button id="btn-run-day" class="btn btn-primary" disabled>Run a workday ▶</button>
+        <p id="run-day-note" class="fineprint">Connect your Pollen first - or replay a scripted day.</p>
+        <div id="day-progress" class="hidden"><div id="day-progress-bar"></div></div>
+        <ul id="day-log" class="log"></ul>
+      </div>
+      <div class="panel" id="decisions-panel">
+        <h2>Decisions awaiting the owner <span id="decision-count" class="pill hidden"></span></h2>
+        <p class="fineprint">Agents do the daily work and bring finished jobs here when a human call is needed.</p>
+        <ul id="decision-list" class="cards"></ul>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ============ OFFICE (FLOOR) VIEW ============ -->
+  <section id="view-office" class="view hidden">
+    <button class="btn btn-ghost" id="btn-back-tower">← back to the tower</button>
+    <div id="office-head">
+      <h2 id="office-name"></h2>
+      <p id="office-tagline"></p>
+      <span id="office-floor-label" class="chip"></span>
+    </div>
+    <div class="office-cols">
+      <div class="panel">
+        <h3>The agents on this floor</h3>
+        <ul id="agent-list" class="cards"></ul>
+      </div>
+      <div class="panel">
+        <h3>Jobs board</h3>
+        <ul id="job-list" class="cards"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DIRECTORY VIEW ============ -->
+  <section id="view-directory" class="view hidden">
+    <h2>Company directory</h2>
+    <p class="fineprint">Every floor is one business, run by one owner and their Pollinations agents.</p>
+    <ul id="directory-list" class="cards"></ul>
+    <div class="panel" id="rent-panel">
+      <h3>Apply to rent the next office</h3>
+      <p class="fineprint">Name your company and say what it does. In connected mode this spins up real agents on <em>your</em> Pollinations account (they run on your Pollen). In replay mode it joins the sample tower.</p>
+      <form id="rent-form">
+        <input id="rent-name" maxlength="42" placeholder="Company name" required>
+        <input id="rent-biz" maxlength="140" placeholder="What the company does" required>
+        <button class="btn btn-primary" type="submit">Apply</button>
+      </form>
+      <p id="rent-result" class="fineprint"></p>
+    </div>
+  </section>
+
+  <!-- ============ RECEIPTS VIEW ============ -->
+  <section id="view-receipts" class="view hidden">
+    <h2>Receipts</h2>
+    <p class="fineprint">Each agent call and its tokens, with the observed change in this key's budget. This is not exact per-call attribution: other use of this key and delayed billing settlement can affect it. Final charges can cross a provider budget; neither budget nor local pause is a strict spending ceiling.</p>
+    <div id="receipts-summary"></div>
+    <table id="receipts-table"><thead><tr><th>Time</th><th>Floor</th><th>Job</th><th>Agent</th><th>Tokens in/out</th><th>Observed debit (Pollen)</th></tr></thead><tbody></tbody></table>
+    <button id="btn-export-receipts" class="btn btn-ghost">Download JSON</button>
+  </section>
+</main>
+
+<!-- ============ CONSENT / DISCLOSURE MODAL ============ -->
+<dialog id="modal-consent">
+  <h2>Connect your own Pollen</h2>
+  <p>Corner Office runs on <strong>Bring Your Own Pollen</strong>. Before anything happens, here is exactly what connecting means:</p>
+  <ol>
+    <li>You'll authorize on <code>enter.pollinations.ai</code> with a device code - nothing is spent by opening it.</li>
+    <li>On the consent screen, tick the <strong>keys</strong> permission. It lets this app create your floor's agents <em>on your own account</em> (private prompt agents named <code>corner-office-…</code>). You can see and delete them any time in your Pollinations dashboard.</li>
+    <li>Set a <strong>finite provider budget</strong> on the consent screen. It is not a guaranteed spending maximum: provider checks use estimates and a final charge may exceed the remaining budget. Every agent run is paid from <em>your</em> Pollen at standard model rates - this app takes no cut and never sees your balance beyond what you approve.</li>
+    <li>Without <code>keys</code>, you can still explore: floors run through plain model calls on your Pollen, clearly marked, no agents are created.</li>
+  </ol><p class="fineprint">Running a workday sends your business description and previous jobs to Pollinations for paid text generation. Outputs are drafts, not verified web research. The local 1-Pollen pause is not a hard cap; a call may cross it. Unknown or zero observed debit stops further calls because billing may not have settled. Observed key debit can include concurrent use elsewhere and is not exact call attribution. Approval offers a separately confirmed paid follow-up note only.</p>
+  <p class="fineprint">The issued key lives only in this tab's session storage, is never logged or sent anywhere except Pollinations' own API, and is cleared when you close the tab (the issued key remains valid until provider expiry or revocation). Revoke any time from your dashboard.</p>
+  <div class="modal-actions">
+    <button id="btn-consent-go" class="btn btn-primary">Show my device code</button>
+    <button id="btn-consent-cancel" class="btn btn-ghost">Cancel</button>
+  </div>
+</dialog>
+
+<dialog id="modal-device">
+  <h2>Authorize this device</h2>
+  <p>1. Open <a id="device-link" target="_blank" rel="noopener"></a></p>
+  <p>2. Enter code <code id="device-code" class="big-code"></code></p>
+  <p>3. Tick <strong>keys</strong> (to create your agents) and set your budget, then approve.</p>
+  <p id="device-status" class="fineprint">Waiting for approval…</p>
+  <div class="modal-actions"><button id="btn-device-cancel" class="btn btn-ghost">Cancel</button></div>
+</dialog>
+
+<footer>
+  <a href="https://pollinations.ai" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/pollinations/pollinations/main/packages/ui/src/brand/badge-made-with.svg" alt="Made with pollinations.ai" height="20"></a>
+  <span>Corner Office · built for Pollinations quest #17999 · agents run on the caller's own Pollen</span>
+</footer>
+
+<script src="demo.js"></script>
+<script src="pollinations.js"></script>
+<script src="tower3d.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
