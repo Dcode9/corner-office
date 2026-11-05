@@ -7,7 +7,7 @@
   const ENTER = 'https://enter.pollinations.ai';
   const GEN = 'https://gen.pollinations.ai';
   // Filled at deploy time with the publishable app key (pk_) from the owner's dashboard.
-  const APP_KEY = window.POLLI_APP_KEY || 'POLLI_APP_KEY_PLACEHOLDER';
+  const APP_KEY = window.POLLI_APP_KEY || 'pk_scUmtZsYAPW7Gbi8';
   const BASE_MODEL = 'openai/gpt-5.4-nano'; // cheap default; user-side cost is theirs to cap
   const AGENT_PREFIX = 'corner-office';
 
